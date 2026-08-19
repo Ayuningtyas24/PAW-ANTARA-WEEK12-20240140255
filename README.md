@@ -7,6 +7,7 @@ behavior rentan buat belajar, jadi **dimatiin secara default** dan cuma bisa
 diaktifin manual lewat `.env`.
 
 ## Struktur folder
+
 ```
 secure-search-app/
 ├── app.js
@@ -45,19 +46,22 @@ secure-search-app/
 ## Cara install & jalanin
 
 1. Bikin database:
+
 ```sql
-CREATE DATABASE secure_search_db;
+CREATE DATABASE product_db;
 ```
 
 2. Copy `.env.example` jadi `.env`, sesuaikan kredensial DB.
 
 3. Install & seed:
+
 ```bash
 npm install
 npm run seed
 ```
 
 4. Jalankan:
+
 ```bash
 npm run dev
 ```
@@ -66,61 +70,70 @@ npm run dev
 
 ## Endpoint
 
-| Method | Endpoint             | Auth  | Keterangan       |
-|--------|------------------------|-------|--------------------|
-| GET/POST | /register             | -     | Daftar akun         |
-| GET/POST | /login                | -     | Login (session)     |
-| POST   | /logout                | login | Logout               |
-| GET    | /search                | login | Search produk (AMAN, beneran dipake) |
-| GET    | /demo                  | login | **Hub** — 5 kartu menu ke tiap topik |
-| GET/POST | /demo/validasi-server-side | login | Topik #1, selalu aktif |
-| GET/POST | /demo/sanitasi         | login | Topik #2, selalu aktif |
-| GET    | /demo/escape-html       | login | Topik #3, **di-gate** |
-| GET    | /demo/sql-injection     | login | Topik #4, **di-gate** |
-| GET    | /demo/xss               | login | Topik #5, **di-gate** |
+| Method   | Endpoint                   | Auth  | Keterangan                           |
+| -------- | -------------------------- | ----- | ------------------------------------ |
+| GET/POST | /register                  | -     | Daftar akun                          |
+| GET/POST | /login                     | -     | Login (session)                      |
+| POST     | /logout                    | login | Logout                               |
+| GET      | /search                    | login | Search produk (AMAN, beneran dipake) |
+| GET      | /demo                      | login | **Hub** — 5 kartu menu ke tiap topik |
+| GET/POST | /demo/validasi-server-side | login | Topik #1, selalu aktif               |
+| GET/POST | /demo/sanitasi             | login | Topik #2, selalu aktif               |
+| GET      | /demo/escape-html          | login | Topik #3, **di-gate**                |
+| GET      | /demo/sql-injection        | login | Topik #4, **di-gate**                |
+| GET      | /demo/xss                  | login | Topik #5, **di-gate**                |
 
 Setelah login, langsung diarahin ke `/demo` — hub berisi 5 kartu menu ke tiap topik.
 
 ## 5 Topik Keamanan — Contoh & Di Mana Ditanganinya
 
 ### 1️⃣ Validasi Input Server-Side — `/demo/validasi-server-side`
+
 **Selalu aktif**, gak berbahaya. Ditanganin di `middlewares/validators.js` →
 `registerValidationRules`, dipasang di `routes/demo.routes.js` sebelum controller.
 
 ```js
 // middlewares/validators.js
 const registerValidationRules = [
-  body('username')
-    .isLength({ min: 3, max: 20 }).withMessage('Username harus 3-20 karakter')
-    .isAlphanumeric().withMessage('Username cuma boleh huruf & angka'),
-  body('email').isEmail().withMessage('Format email gak valid'),
-  body('password')
-    .isLength({ min: 8 }).withMessage('Password minimal 8 karakter')
-    .matches(/\d/).withMessage('Password harus mengandung minimal 1 angka'),
+  body("username")
+    .isLength({ min: 3, max: 20 })
+    .withMessage("Username harus 3-20 karakter")
+    .isAlphanumeric()
+    .withMessage("Username cuma boleh huruf & angka"),
+  body("email").isEmail().withMessage("Format email gak valid"),
+  body("password")
+    .isLength({ min: 8 })
+    .withMessage("Password minimal 8 karakter")
+    .matches(/\d/)
+    .withMessage("Password harus mengandung minimal 1 angka"),
 ];
 ```
+
 **Coba di form**: kosongin field, isi username pake simbol (`admin!!!`), atau
 password pendek (`123`) — server nolak & kasih pesan spesifik per field. Coba juga
 disable JS di browser atau submit lewat Postman langsung ke endpoint — validasi
 tetep jalan, karena dicek di server, bukan cuma di HTML `required`/JS client.
 
 ### 2️⃣ Sanitasi — `/demo/sanitasi`
+
 **Selalu aktif**, gak berbahaya. Ditanganin di `middlewares/validators.js` →
 `sanitasiDemoRules`.
 
 ```js
 // middlewares/validators.js
 const sanitasiDemoRules = [
-  body('teks').trim().escape(),
-  body('email_input').optional({ checkFalsy: true }).trim().normalizeEmail(),
+  body("teks").trim().escape(),
+  body("email_input").optional({ checkFalsy: true }).trim().normalizeEmail(),
 ];
 ```
+
 **Coba di form**: ketik `  <b>tes</b>  ` (ada spasi nempel) di field teks — hasilnya
 jadi `&lt;b&gt;tes&lt;&#x2F;b&gt;` (spasi ilang, `<`/`>` diubah jadi entity aman).
 Ketik `Budi.Santoso+promo@GMAIL.com` di field email — hasilnya dinormalisasi jadi
 `budisantoso@gmail.com` (lowercase, alias Gmail dibuang).
 
 ### 3️⃣ Escape HTML — `/demo/escape-html` (di-gate)
+
 Ditanganin di `views/demo/escape-html.ejs`, bandingin langsung 2 cara EJS nge-print
 variabel:
 
@@ -131,10 +144,12 @@ variabel:
 <!-- RENTAN: raw, gak di-escape -->
 <div><%- input %></div>
 ```
+
 **Coba payload**: `<img src=x onerror=alert(1)>` — kotak pertama nampilin teksnya
 apa adanya, kotak kedua BENERAN motret gambar gagal & jalanin `alert(1)`.
 
 ### 4️⃣ SQL Injection — `/demo/sql-injection` (di-gate)
+
 Ditanganin di `controllers/demo.unsafe.controller.js` → `sqlInjectionDemo`,
 nunjukin 2 cara query berdampingan:
 
@@ -148,18 +163,22 @@ const safeResults = await Product.findAll({
 const rawQuery = `SELECT * FROM products WHERE name ILIKE '%${q}%'`;
 const [unsafeResults] = await sequelize.query(rawQuery);
 ```
+
 **Coba payload**: `' OR '1'='1` — kolom AMAN gak nemu produk apapun (diperlakukan
 sebagai teks pencarian literal). Kolom RENTAN malah nampilin SEMUA produk, karena
 query-nya jadi `WHERE name ILIKE '%%' OR '1'='1%'` — kondisi `'1'='1'` selalu benar.
 
 ### 5️⃣ XSS (Cross-Site Scripting) — `/demo/xss` (di-gate)
+
 Ditanganin di `controllers/demo.unsafe.controller.js` → `xssDemo` (reflected) +
 `seeders/seed.js` (stored, 1 produk sengaja isi payload).
 
 **Reflected XSS** — coba payload:
+
 ```
 <script>alert('XSS dari ' + document.cookie)</script>
 ```
+
 Kalo nge-alert, artinya script asing berhasil baca `document.cookie` milik user —
 di dunia nyata dipake buat nyolong session/cookie login orang lain.
 
@@ -197,6 +216,7 @@ khusus buat demo Stored XSS, dan ikut aturan flag yang sama.
 orang lain** (termasuk WiFi kampus kalo laptop lu network-nya kebuka).
 
 ## Ide pengembangan / diskusi lanjutan
+
 - Kenapa `UNION SELECT` di SQL Injection bisa dipake buat nyolong data dari
   tabel lain (`users`)? Coba bandingin struktur tabel `products` vs `users`.
 - Content Security Policy (CSP) header sebagai lapisan pertahanan TAMBAHAN
