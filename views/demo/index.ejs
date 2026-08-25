@@ -67,7 +67,7 @@
         <p class="text-sm text-gray-500">Bandingin query parameterized vs string SQL nyambung manual.</p>
       </a>
 
-      <a href="/demo/xss" class="block bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow sm:col-span-2">
+      <a href="/demo/xss" class="block bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
         <div class="flex items-center gap-2 mb-2">
           <span class="text-2xl">⚡</span>
           <span class="text-xs font-semibold px-2 py-1 rounded-full <%= vulnDemoEnabled ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500' %>">
@@ -76,6 +76,19 @@
         </div>
         <h2 class="font-semibold text-gray-800 mb-1">5. XSS (Cross-Site Scripting)</h2>
         <p class="text-sm text-gray-500">Coba masukin payload <code>&lt;script&gt;</code>, liat bedanya kena vs enggak.</p>
+      </a>
+
+      <!-- Bagian 2: Implementasi Mandiri -->
+      <a href="/feedback" class="block bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-500 rounded-xl p-5 shadow-sm hover:shadow-md transition-all sm:col-span-2">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🛡️</span>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-600 text-white">BAGIAN 2: IMPLEMENTASI MANDIRI</span>
+          </div>
+          <span class="text-xs text-indigo-600 font-semibold flex items-center gap-1">Buka Fitur Aman &rarr;</span>
+        </div>
+        <h2 class="font-bold text-gray-900 text-base mb-1">Form Ulasan & Feedback Pelanggan (100% Aman)</h2>
+        <p class="text-sm text-gray-600">Implementasi lengkap 5 pilar keamanan: Validasi Server-Side, Sanitasi Input, HTML Escaping, dan Parameterized Queries.</p>
       </a>
     </div>
   </main>

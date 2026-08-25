@@ -60,6 +60,45 @@ const sanitasiDemoRules = [
 ];
 
 /**
+ * 🛡️ DITANGANI DI SINI - Bagian 2 (Implementasi Mandiri: Form Feedback & Ulasan)
+ * Validasi Server-Side ketat + Sanitasi input sebelum masuk database.
+ */
+const feedbackValidationRules = [
+  body('name')
+    .trim() // Sanitasi: hapus spasi berlebih di awal & akhir
+    .notEmpty()
+    .withMessage('Nama lengkap wajib diisi')
+    .isLength({ min: 3, max: 50 })
+    .withMessage('Nama harus antara 3 - 50 karakter')
+    .matches(/^[a-zA-Z0-9\s.,'-]+$/)
+    .withMessage('Nama hanya boleh mengandung huruf, angka, spasi, dan tanda baca umum')
+    .escape(), // Sanitasi: ubah karakter HTML menjadi entitas aman
+
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email wajib diisi')
+    .isEmail()
+    .withMessage('Format email tidak valid (contoh: nama@domain.com)')
+    .normalizeEmail(), // Sanitasi: format email distandarisasi (lowercase dll)
+
+  body('rating')
+    .trim()
+    .notEmpty()
+    .withMessage('Rating wajib dipilih')
+    .isInt({ min: 1, max: 5 })
+    .withMessage('Rating harus berupa angka antara 1 sampai 5'),
+
+  body('comment')
+    .trim() // Sanitasi
+    .notEmpty()
+    .withMessage('Komentar/ulasan wajib diisi')
+    .isLength({ min: 5, max: 500 })
+    .withMessage('Komentar harus berisi antara 5 - 500 karakter')
+    .escape(), // Sanitasi HTML tags
+];
+
+/**
  * Middleware buat ngecek hasil validasi. Kalo ada error, dikumpulin
  * jadi array pesan yang gampang ditampilin ulang ke form.
  */
@@ -77,5 +116,7 @@ module.exports = {
   loginValidationRules,
   searchValidationRules,
   sanitasiDemoRules,
+  feedbackValidationRules,
   handleValidationErrors,
 };
+
